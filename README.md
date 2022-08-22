@@ -5,4 +5,4 @@ This project evaluates articles from a h2 database with Apache Spark.
   
 ### Run
   
-To run the project, make sure to add path variables for where you want your database to be saved [first arg] and the folder where your JSON files are saved [second arg].
+To run the project, make sure to add the path variable for where your database is saved.
