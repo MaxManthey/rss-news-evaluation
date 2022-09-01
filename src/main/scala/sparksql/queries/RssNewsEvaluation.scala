@@ -1,6 +1,9 @@
+package sparksql.queries
+
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import java.util.Properties
+import h2.queries.JdbcConnection
 
 
 object RssNewsEvaluation {
@@ -10,7 +13,7 @@ object RssNewsEvaluation {
 
 
   def main(args: Array[String]): Unit = {
-    if(args.length != 4) {
+    if (args.length != 4) {
       println("Amount of provided args incorrect.")
       sys.exit(1)
     }
@@ -22,6 +25,7 @@ object RssNewsEvaluation {
       .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
+    //TODO replace with spark sql queries
     val jdbcConnection = JdbcConnection(args(0), connectionProperties)
     jdbcConnection.createTableTempView("source_date", spark)
     jdbcConnection.createTableTempView("news_word", spark)
@@ -51,5 +55,3 @@ object RssNewsEvaluation {
     spark.stop()
   }
 }
-//TODO include logs
-//TODO write tests
