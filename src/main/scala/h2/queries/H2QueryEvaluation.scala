@@ -1,31 +1,19 @@
-package sparksql.queries
+package h2.queries
 
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
+import helper.{MainHelper, JdbcConnection}
 import java.util.Properties
-import h2.queries.JdbcConnection
 
 
-object RssNewsEvaluation {
+object H2QueryEvaluation {
   val connectionProperties = new Properties()
   connectionProperties.put("user", "sa")
   connectionProperties.put("password", "")
 
 
   def main(args: Array[String]): Unit = {
-    if (args.length != 4) {
-      println("Amount of provided args incorrect.")
-      sys.exit(1)
-    }
+    MainHelper.argsCheck(args, 4)
+    val spark = MainHelper.createSparkSession
 
-    val conf = new SparkConf().setMaster("local[*]").setAppName("Test")
-    val spark = SparkSession
-      .builder()
-      .config(conf)
-      .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
-
-    //TODO replace with spark sql queries
     val jdbcConnection = JdbcConnection(args(0), connectionProperties)
     jdbcConnection.createTableTempView("source_date", spark)
     jdbcConnection.createTableTempView("news_word", spark)
