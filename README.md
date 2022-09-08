@@ -1,6 +1,7 @@
 # rss-news-evaluation
   
-This project evaluates articles from a h2 database with Apache Spark.    
+This project evaluates articles from a h2 database with Apache Spark.  
+There are multiple ways to evaluate the articles you can choose from.  
 (This is a follow up project to [rss-news-evaluation](https://github.com/MaxManthey/rss-news-persistence))
   
 ### Run
