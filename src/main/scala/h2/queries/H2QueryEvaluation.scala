@@ -1,6 +1,6 @@
 package h2.queries
 
-import helper.{MainHelper, JdbcConnection}
+import helper.{JdbcConnection, MainHelper}
 import java.util.Properties
 
 
@@ -18,6 +18,8 @@ object H2QueryEvaluation {
     jdbcConnection.createTableTempView("source_date", spark)
     jdbcConnection.createTableTempView("news_word", spark)
     jdbcConnection.createTableTempView("word_frequency", spark)
+    jdbcConnection.createTableTempView("aggregated_date", spark)
+    jdbcConnection.createTableTempView("aggregated_word_frequency", spark)
 
     val frequencyPerSourceQuery = "SELECT NW.word, WF.frequency, SD.DATE, SD.SOURCE " +
       "FROM WORD_FREQUENCY WF " +
@@ -39,6 +41,17 @@ object H2QueryEvaluation {
       "ORDER BY SD.DATE;"
     val frequencyPerDayDF = spark.sql(frequencyPerDayQuery)
     frequencyPerDayDF.show(frequencyPerDayDF.count.toInt)
+
+    val frequencyPerDayQueryPreAggregation = "SELECT NW.word, AWF.frequency, AD.date " +
+      "FROM AGGREGATED_WORD_FREQUENCY AWF " +
+      "JOIN NEWS_WORD NW on AWF.NEWS_WORD_ID = NW.ID " +
+      "JOIN aggregated_date ad on AWF.date_id = ad.id " +
+      "WHERE NW.word = 'ukraine' " +
+      "AND AD.DATE BETWEEN '2022-05-20' AND '2022-09-21' " +
+      "GROUP BY AD.DATE, NW.word, AWF.frequency " +
+      "ORDER BY AD.DATE;"
+    val frequencyPerDayPreAggregationDF = spark.sql(frequencyPerDayQueryPreAggregation)
+    frequencyPerDayPreAggregationDF.show(frequencyPerDayPreAggregationDF.count.toInt)
 
     spark.stop()
   }
