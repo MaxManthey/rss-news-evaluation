@@ -2,8 +2,10 @@ package parquet.queries
 
 import helper.MainHelper
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{DataType, IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{DateType, IntegerType, StringType, StructField, StructType}
+import java.sql.Date
 import persistence.Extraction.ArticleExtractor
+
 
 
 object ParquetPersistenceEvaluation {
@@ -12,21 +14,26 @@ object ParquetPersistenceEvaluation {
 
     val spark = MainHelper.createSparkSession
 
-    val newsWordSchema = StructType(Array(StructField("id", IntegerType), StructField("word", StringType)))
-//    val sourceDateSchema = StructType(Array(
-//      StructField("id", IntegerType),
-//      StructField("date", DataType),
-//      StructField("source", String),
-//      StructField("hashed_source", StringType)
-//    ))
-//    spark.createDataFrame()
-//    val test = spark.emptyDataFrame
-    val newsWordDf = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], newsWordSchema)
+    val articleSchema = StructType(Array(
+      StructField("word", StringType),
+      StructField("frequency", IntegerType),
+      StructField("source", StringType),
+      StructField("date", DateType),
+    ))
+    var articleDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], articleSchema)
 
+    ArticleExtractor("/Users/max/Development/Thesis/all-news-files/test-news-files")
+      .foreach(article => {
+        val moin = article.wordsMap.keys.map(word =>
+          (word, article.wordsMap(word), article.source, Date.valueOf(article.date))).toSeq
+        val singleArticleDF = spark.createDataFrame(moin).toDF("word", "frequency", "source", "date")
+        singleArticleDF.show()
+        articleDF = articleDF.union(singleArticleDF)
+      })
 
-//    ArticleExtractor("/Users/max/Development/Thesis/all-news-files/test-news-files").foreach{
-//      println
-//    }
+    val test = articleDF.select("word", "frequency")
+    test.show()
+    articleDF.show()
 
     spark.stop()
   }

@@ -1,6 +1,6 @@
 package sparksql.queries
 
-import helper.{ArticleExtractor, JdbcConnection, MainHelper}
+import helper.{JdbcConnection, MainHelper}
 import org.apache.spark.sql.functions._
 
 import java.util.Properties
