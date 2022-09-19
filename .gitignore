@@ -32,3 +32,6 @@ output.log
 
 #h2
 *.db
+
+#spark warehouse
+spark-warehouse/
