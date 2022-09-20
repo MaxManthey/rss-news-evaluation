@@ -2,9 +2,7 @@ package sparksql.queries
 
 import helper.{JdbcConnection, MainHelper}
 import org.apache.spark.sql.functions._
-
 import java.util.Properties
-//import Extraction.ArticleExtractor
 
 
 object SparkSqlQueryEvaluation {
@@ -21,6 +19,7 @@ object SparkSqlQueryEvaluation {
     val sourceDate = jdbcConnection.createTable("source_date", spark)
     val newsWord = jdbcConnection.createTable("news_word", spark)
     val wordFrequency = jdbcConnection.createTable("word_frequency", spark)
+    val aggregatedWordFrequency = jdbcConnection.createTable("aggregated_word_frequency", spark)
 
     val basicQuery = wordFrequency.as("wf")
       .join(newsWord.as("nw"), wordFrequency("news_word_id") ===  newsWord("id"),"full")
@@ -38,6 +37,13 @@ object SparkSqlQueryEvaluation {
       .agg(sum("wf.frequency"))
       .orderBy(sourceDate("date"))
     frequencyPerDayDataSet.show(frequencyPerDayDataSet.count.toInt)
+
+    val aggregatedFrequencyPerDayDataSet = aggregatedWordFrequency.as("awf")
+      .join(newsWord.as("nw"), aggregatedWordFrequency("news_word_id") ===  newsWord("id"),"full")
+      .select("nw.word", "awf.frequency", "awf.date")
+      .where(newsWord("word") === args(1).toLowerCase && aggregatedWordFrequency("date") >= args(2) && aggregatedWordFrequency("date") <= args(3))
+      .orderBy(aggregatedWordFrequency("date"))
+    aggregatedFrequencyPerDayDataSet.show(aggregatedFrequencyPerDayDataSet.count.toInt)
 
     spark.stop()
   }
