@@ -14,7 +14,7 @@ case class ParquetArticlePersistence(spark: SparkSession, parquetFolderPath: Str
   private val parquetPersistenceHelper = ParquetPersistenceHelper(spark, parquetPath)
 
 
-  def persistSourcesAsParquet(fileDirName: String): Unit = {
+  def persistSourcesAsParquet(newsFolderPath: String): Unit = {
     val articleSchema = StructType(Array(
       StructField("word", StringType),
       StructField("frequency", IntegerType),
@@ -24,7 +24,7 @@ case class ParquetArticlePersistence(spark: SparkSession, parquetFolderPath: Str
     val articleDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], articleSchema)
     parquetPersistenceHelper.createParquetFile(articleDF)
 
-    ArticleExtractor(fileDirName)
+    ArticleExtractor(newsFolderPath)
       .foreach(article => {
         val articleSeq = article.wordsMap.keys.map(word =>
           (word, article.wordsMap(word), article.source, Date.valueOf(article.date))).toSeq
