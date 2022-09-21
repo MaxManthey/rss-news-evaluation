@@ -1,7 +1,6 @@
 package sparksql.queries
 
 import helper.{JdbcConnection, MainHelper}
-import org.apache.spark.sql.functions._
 import java.util.Properties
 
 
@@ -21,28 +20,15 @@ object SparkSqlQueryEvaluation {
     val wordFrequency = jdbcConnection.createTable("word_frequency", spark)
     val aggregatedWordFrequency = jdbcConnection.createTable("aggregated_word_frequency", spark)
 
-    val basicQuery = wordFrequency.as("wf")
-      .join(newsWord.as("nw"), wordFrequency("news_word_id") ===  newsWord("id"),"full")
-      .join(sourceDate.as("sd"), wordFrequency("source_date_id") ===  sourceDate("id"),"full")
-      .where(newsWord("word") === args(1).toLowerCase && sourceDate("date") >= args(2) && sourceDate("date") <= args(3))
+    val sparkSqlQueries = SparkSqlQueries(sourceDate, newsWord, wordFrequency, aggregatedWordFrequency)
 
-    val frequencyPerSourceDataSet = basicQuery
-      .select("nw.word", "wf.frequency", "sd.date", "sd.source")
-      .orderBy(sourceDate("date"))
+    val frequencyPerSourceDataSet = sparkSqlQueries.frequencyPerSourceDataSet(args)
     frequencyPerSourceDataSet.show(frequencyPerSourceDataSet.count.toInt)
 
-    val frequencyPerDayDataSet = basicQuery
-      .select("nw.word", "wf.frequency", "sd.date")
-      .groupBy(sourceDate("date"), newsWord("word"))
-      .agg(sum("wf.frequency"))
-      .orderBy(sourceDate("date"))
+    val frequencyPerDayDataSet = sparkSqlQueries.frequencyPerDayDataSet(args)
     frequencyPerDayDataSet.show(frequencyPerDayDataSet.count.toInt)
 
-    val aggregatedFrequencyPerDayDataSet = aggregatedWordFrequency.as("awf")
-      .join(newsWord.as("nw"), aggregatedWordFrequency("news_word_id") ===  newsWord("id"),"full")
-      .select("nw.word", "awf.frequency", "awf.date")
-      .where(newsWord("word") === args(1).toLowerCase && aggregatedWordFrequency("date") >= args(2) && aggregatedWordFrequency("date") <= args(3))
-      .orderBy(aggregatedWordFrequency("date"))
+    val aggregatedFrequencyPerDayDataSet = sparkSqlQueries.aggregatedFrequencyPerDayDataSet(args)
     aggregatedFrequencyPerDayDataSet.show(aggregatedFrequencyPerDayDataSet.count.toInt)
 
     spark.stop()
