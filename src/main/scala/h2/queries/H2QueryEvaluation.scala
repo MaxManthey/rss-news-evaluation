@@ -42,14 +42,13 @@ object H2QueryEvaluation {
     val frequencyPerDayDF = spark.sql(frequencyPerDayQuery)
     frequencyPerDayDF.show(frequencyPerDayDF.count.toInt)
 
-    val frequencyPerDayQueryPreAggregation = "SELECT NW.word, AWF.frequency, AD.date " +
+    val frequencyPerDayQueryPreAggregation = "SELECT NW.word, AWF.frequency, AWF.date " +
       "FROM AGGREGATED_WORD_FREQUENCY AWF " +
       "JOIN NEWS_WORD NW on AWF.NEWS_WORD_ID = NW.ID " +
-      "JOIN aggregated_date ad on AWF.date_id = ad.id " +
       "WHERE NW.word = 'ukraine' " +
-      "AND AD.DATE BETWEEN '2022-05-20' AND '2022-09-21' " +
-      "GROUP BY AD.DATE, NW.word, AWF.frequency " +
-      "ORDER BY AD.DATE;"
+      "AND AWF.DATE BETWEEN '2022-05-20' AND '2022-09-21' " +
+      "GROUP BY AWF.DATE, NW.word, AWF.frequency " +
+      "ORDER BY AWF.DATE;"
     val frequencyPerDayPreAggregationDF = spark.sql(frequencyPerDayQueryPreAggregation)
     frequencyPerDayPreAggregationDF.show(frequencyPerDayPreAggregationDF.count.toInt)
 
