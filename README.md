@@ -6,4 +6,4 @@ There are multiple ways to evaluate the articles you can choose from within the 
   
 ### Run
   
-To run the project, please refer to the readmes in the dedicated packages
+To run the project, please refer to the readmes in the dedicated packages.
