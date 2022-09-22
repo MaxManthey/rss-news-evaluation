@@ -1,6 +1,6 @@
 # Spark SQL Query Evaluation
   
-The project evaluates articles from a h2 database with Apache Spark.  
+The project evaluates the possibilities of persisting news articles with Apache Spark, as well as the possibilities to run queries in different ways.  
 This packages examines the possibility of running SQL queries, with SQL functions native to Spark on the pre-existing H2 database.
 
 ## Run
