@@ -1,6 +1,6 @@
 # Parquet Persistence Evaluation
   
-The project evaluates the possibilities of persisting news articles with Apache Spark, as well as the possibilities to evaluate them.  
+The project evaluates the possibilities of persisting news articles with Apache Spark, as well as the possibilities to run queries in different ways.  
 This packages examines the possibility persisting data from JSON files to a parquet table.
 
 ## Run
