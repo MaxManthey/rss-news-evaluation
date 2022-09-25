@@ -10,8 +10,11 @@ case class ParquetArticlePersistence(spark: SparkSession, parquetFolderPath: Str
   private val parquetPath =
     if(parquetFolderPath.charAt(parquetFolderPath.length-1) == '/') parquetFolderPath + "news-articles.parquet"
     else parquetFolderPath + "/news-articles.parquet"
+  private val tmpParquetPath =
+    if(parquetFolderPath.charAt(parquetFolderPath.length-1) == '/') parquetFolderPath + "news-articles.parquet"
+    else parquetFolderPath + "/tmp-news-articles.parquet"
 
-  private val parquetPersistenceHelper = ParquetPersistenceHelper(spark, parquetPath)
+  private val parquetPersistenceHelper = ParquetPersistenceHelper(spark)
 
 
   def persistSourcesAsParquet(newsFolderPath: String): Unit = {
@@ -21,19 +24,24 @@ case class ParquetArticlePersistence(spark: SparkSession, parquetFolderPath: Str
       StructField("source", StringType),
       StructField("date", DateType),
     ))
-    val articleDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], articleSchema)
-    parquetPersistenceHelper.createParquetFile(articleDF)
+    val newArticleDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], articleSchema)
+    parquetPersistenceHelper.createParquetFile(newArticleDF, tmpParquetPath)
 
     ArticleExtractor(newsFolderPath)
       .foreach(article => {
         val articleSeq = article.wordsMap.keys.map(word =>
           (word, article.wordsMap(word), article.source, Date.valueOf(article.date))).toSeq
-        val newArticleDF = spark.createDataFrame(articleSeq).toDF("word", "frequency", "source", "date")
-        parquetPersistenceHelper.appendToParquetFile(newArticleDF)
+        val currentArticleDF = spark.createDataFrame(articleSeq).toDF("word", "frequency", "source", "date")
+        parquetPersistenceHelper.appendToParquetFile(currentArticleDF, tmpParquetPath)
       })
+
+    val articleDF = parquetPersistenceHelper.readParquetFileAsDF(tmpParquetPath)
+    parquetPersistenceHelper.createParquetFile(articleDF, parquetPath: String)
+
+    parquetPersistenceHelper.createParquetFile(newArticleDF, tmpParquetPath)
   }
 
 
   def readParquetFileAsDF(): DataFrame =
-    parquetPersistenceHelper.readParquetFileAsDF()
+    parquetPersistenceHelper.readParquetFileAsDF(parquetPath: String)
 }

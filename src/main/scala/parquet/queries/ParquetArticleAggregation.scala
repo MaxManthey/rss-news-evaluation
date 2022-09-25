@@ -10,7 +10,7 @@ case class ParquetArticleAggregation(spark: SparkSession, parquetFolderPath: Str
     if(parquetFolderPath.charAt(parquetFolderPath.length-1) == '/') parquetFolderPath + aggregationFolderName
     else parquetFolderPath + aggregationFolderName
 
-  private val parquetPersistenceHelper = ParquetPersistenceHelper(spark, parquetPath)
+  private val parquetPersistenceHelper = ParquetPersistenceHelper(spark)
 
 
   def aggregateArticlesAsParquet(articlesDF: DataFrame): Unit = {
@@ -18,9 +18,9 @@ case class ParquetArticleAggregation(spark: SparkSession, parquetFolderPath: Str
       .groupBy("date", "word")
       .agg(sum("frequency"))
 
-    parquetPersistenceHelper.createParquetFile(aggregatedArticles)
+    parquetPersistenceHelper.createParquetFile(aggregatedArticles, parquetPath: String)
   }
 
   def readAggregatedParquetFileAsDF(): DataFrame =
-    parquetPersistenceHelper.readParquetFileAsDF()
+    parquetPersistenceHelper.readParquetFileAsDF(parquetPath: String)
 }
