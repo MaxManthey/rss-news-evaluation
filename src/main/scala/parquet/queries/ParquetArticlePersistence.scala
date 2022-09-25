@@ -26,6 +26,7 @@ case class ParquetArticlePersistence(spark: SparkSession, parquetFolderPath: Str
     ))
     val newArticleDF = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], articleSchema)
     parquetPersistenceHelper.createParquetFile(newArticleDF, tmpParquetPath)
+    parquetPersistenceHelper.createParquetFile(newArticleDF, parquetPath)
 
     ArticleExtractor(newsFolderPath)
       .foreach(article => {
@@ -36,7 +37,7 @@ case class ParquetArticlePersistence(spark: SparkSession, parquetFolderPath: Str
       })
 
     val articleDF = parquetPersistenceHelper.readParquetFileAsDF(tmpParquetPath)
-    parquetPersistenceHelper.createParquetFile(articleDF, parquetPath: String)
+    parquetPersistenceHelper.createParquetFile(articleDF, parquetPath)
 
     parquetPersistenceHelper.createParquetFile(newArticleDF, tmpParquetPath)
   }

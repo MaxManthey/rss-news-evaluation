@@ -11,14 +11,14 @@ object ParquetPersistenceEvaluation {
     val spark = MainHelper.createSparkSession
 
     val parquetArticlePersistence = ParquetArticlePersistence(spark, args(1))
-//    parquetArticlePersistence.persistSourcesAsParquet(args(0))
+    parquetArticlePersistence.persistSourcesAsParquet(args(0))
     val articleDF = parquetArticlePersistence.readParquetFileAsDF()
     showSpecifiedQueryResult(articleDF, args)
 
-//    val parquetArticleAggregation = ParquetArticleAggregation(spark, args(1))
-//    parquetArticleAggregation.aggregateArticlesAsParquet(articleDF)
-//    val aggregatedArticlesDF = parquetArticleAggregation.readAggregatedParquetFileAsDF()
-//    showSpecifiedQueryResult(aggregatedArticlesDF, args)
+    val parquetArticleAggregation = ParquetArticleAggregation(spark, args(1))
+    parquetArticleAggregation.aggregateArticlesAsParquet(articleDF)
+    val aggregatedArticlesDF = parquetArticleAggregation.readAggregatedParquetFileAsDF()
+    showSpecifiedQueryResult(aggregatedArticlesDF, args)
 
     spark.stop()
   }
