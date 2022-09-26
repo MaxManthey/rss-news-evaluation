@@ -15,10 +15,10 @@ object SparkSqlQueryEvaluation {
     val spark = MainHelper.createSparkSession
 
     val jdbcConnection = JdbcConnection(args(0), connectionProperties)
-    val sourceDate = jdbcConnection.createTable("source_date", spark)
-    val newsWord = jdbcConnection.createTable("news_word", spark)
-    val wordFrequency = jdbcConnection.createTable("word_frequency", spark)
-    val aggregatedWordFrequency = jdbcConnection.createTable("aggregated_word_frequency", spark)
+    val sourceDate = jdbcConnection.getTableAsDataframe("source_date", spark)
+    val newsWord = jdbcConnection.getTableAsDataframe("news_word", spark)
+    val wordFrequency = jdbcConnection.getTableAsDataframe("word_frequency", spark)
+    val aggregatedWordFrequency = jdbcConnection.getTableAsDataframe("aggregated_word_frequency", spark)
 
     val sparkSqlQueries = SparkSqlQueries(sourceDate, newsWord, wordFrequency, aggregatedWordFrequency)
 
