@@ -5,20 +5,21 @@ import persistence.DbClasses.{Article, DbConnectionFactory, NewsWord, SourceDate
 
 import java.security.MessageDigest
 
-case class ArticleDao(spark: SparkSession, pathToDb: String) {
+case class ArticleDao(spark: SparkSession, connectionUrl: String) {
   //drop existing Tables and create required tables
-  DbConnectionFactory(pathToDb)
+  private val dbConnectionFactory = DbConnectionFactory(connectionUrl)
+  dbConnectionFactory.close()
+
+  private val sourceDateDao = SourceDateDao(spark, connectionUrl)
+  private val newsWordDao = NewsWordDao(spark, connectionUrl)
+  private val wordFrequencyDao = WordFrequencyDao(spark, connectionUrl)
 
 
   def save(article: Article): Unit = {
-    val sourceDateDao = SourceDateDao(spark, pathToDb)
-    val newsWordDao = NewsWordDao(spark, pathToDb)
-    val wordFrequencyDao = WordFrequencyDao(spark, pathToDb)
-
     try {
       val sourceDate = SourceDate(article.date, article.source,
         MessageDigest.getInstance("MD5").digest(article.source.getBytes).map("%02x".format(_)).mkString)
-        sourceDateDao.saveIfNotExists(sourceDate)
+      sourceDateDao.saveIfNotExists(sourceDate)
       val sourceDateId = sourceDateDao.findId(sourceDate) match {
         case Some(value) => value
         case None => -1
