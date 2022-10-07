@@ -10,12 +10,12 @@ object SparkJdbcPersistence {
     MainHelper.argsCheck(args, 2)
     val spark = MainHelper.createSparkSession
 
-    val articleDao = ArticleDao(spark, args(1))
-
-    ArticleExtractor(args(0))
-      .foreach(article => {
-        articleDao.save(article)
-      })
+//    val articleDao = ArticleDao(spark, args(1))
+//
+//    ArticleExtractor(args(0))
+//      .foreach(article => {
+//        articleDao.save(article)
+//      })
 
     val timer = System.nanoTime
 
