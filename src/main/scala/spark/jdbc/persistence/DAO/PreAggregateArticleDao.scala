@@ -1,10 +1,8 @@
 package spark.jdbc.persistence.DAO
 
 import helper.JdbcConnection
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.functions.sum
-import persistence.DbClasses.AggregatedWordFrequency
-import java.sql.Date
 import java.util.Properties
 
 
@@ -12,8 +10,6 @@ case class PreAggregateArticleDao(spark: SparkSession, connectionUrl: String) {
   val connectionProperties = new Properties()
   connectionProperties.put("user", "sa")
   connectionProperties.put("password", "")
-
-  private val aggregatedWordFrequencyDao = AggregatedWordFrequencyDao(spark, connectionUrl)
 
 
   def preAggregate(): Unit = {
@@ -25,31 +21,23 @@ case class PreAggregateArticleDao(spark: SparkSession, connectionUrl: String) {
 
       val distinctWords = newsWordDF.collect()
 
-
       for(distinctWord <- distinctWords) {
-        val id = distinctWord(0)
         val word = distinctWord(1)
 
-        val aggregatedWordFrequencyArr = wordFrequencyDF.as("wf")
+        val aggregatedWordFrequencyDF = wordFrequencyDF.as("wf")
           .join(newsWordDF.as("nw"), wordFrequencyDF("news_word_id") ===  newsWordDF("id"),"full")
           .join(sourceDateDF.as("sd"), wordFrequencyDF("source_date_id") === sourceDateDF("id"), "full")
           .where(newsWordDF("word") === word)
-          .select("nw.word", "wf.frequency", "sd.date")
-          .groupBy(sourceDateDF("date"), newsWordDF("word"))
+          .select("nw.id", "wf.frequency", "sd.date")
+          .groupBy(newsWordDF("id").as("news_word_id"), sourceDateDF("date"))
           .agg(sum("wf.frequency"))
+          .withColumnRenamed("sum(wf.frequency)", "frequency")
           .orderBy(sourceDateDF("date"))
-          .collect()
-        //TODO collect weg
 
-        //TODO for schleife weg und DF auf einmal saven
-        for(el <- aggregatedWordFrequencyArr) {
-          val aggregatedWordFrequency = AggregatedWordFrequency(
-            el(2).toString.toInt,
-            id.toString.toInt,
-            Date.valueOf(el(0).toString)
-          )
-          aggregatedWordFrequencyDao.save(aggregatedWordFrequency)
-        }
+        aggregatedWordFrequencyDF
+          .write
+          .mode(SaveMode.Append)
+          .jdbc(connectionUrl, "AGGREGATED_WORD_FREQUENCY", connectionProperties)
       }
     } catch {
       case e: Exception => println(s"Error trying to add preAggregateArticle ${e.getCause}")
