@@ -6,9 +6,8 @@ import persistence.DbClasses.WordFrequency
 import java.util.Properties
 
 
-case class WordFrequencyDao(spark: SparkSession, pathToDb: String) {
+case class WordFrequencyDao(spark: SparkSession, connectionUrl: String) {
   private val tableName = "word_frequency"
-  private val connectionUrl = "jdbc:h2:" + pathToDb + "/rss_news_articles"
   private val connectionProperties = new Properties()
   connectionProperties.put("user", "sa")
   connectionProperties.put("password", "")
@@ -24,14 +23,13 @@ case class WordFrequencyDao(spark: SparkSession, pathToDb: String) {
       sourceDateDF.write.mode(SaveMode.Append).jdbc(connectionUrl, tableName, connectionProperties)
     } catch {
       case e: Exception => println(s"Error trying to add wordFrequency: $wordFrequency} ${e.getCause}")
-        e.printStackTrace()
     }
   }
 
 
   def findId(wordFrequency: WordFrequency): Option[Int] = {
     try {
-      val wordFrequencyDF = JdbcConnection(pathToDb, connectionProperties).getTableAsDataframe(tableName, spark)
+      val wordFrequencyDF = JdbcConnection(connectionUrl, connectionProperties).getTableAsDataframe(tableName, spark)
       val queryResult = wordFrequencyDF.select("id")
         .where(wordFrequencyDF("frequency") === wordFrequency.frequency &&
           wordFrequencyDF("news_word_id") === wordFrequency.newsWordsId &&

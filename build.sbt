@@ -15,5 +15,5 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.196",
   "io.spray" %%  "spray-json" % "1.3.6",
   "de.l3s.boilerpipe" % "boilerpipe" % "1.1.0",
-  "org.maxmanthey" %% "rss-news-persistence" % "0.1.0-SNAPSHOT"
+  "org.maxmanthey" %% "rss-news-persistence" % "0.1.1-SNAPSHOT"
 )
